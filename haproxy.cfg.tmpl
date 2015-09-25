@@ -1,0 +1,39 @@
+global
+  log 127.0.0.1   local0
+  log 127.0.0.1   local1 notice
+  spread-checks   5
+  maxconn 4096
+  #debug
+  #quiet
+  user haproxy
+  group haproxy
+  stats socket /var/lib/haproxy/stats mode 777
+
+
+
+defaults
+  log     global
+  mode    http
+  retries 3
+  timeout client 361s
+  timeout server 361s
+  option dontlognull
+  option redispatch
+  balance  leastconn
+
+listen galera-cluster 0.0.0.0:33006
+  mode tcp
+  balance source
+  option tcplog
+  option httpchk
+{{ range $node_name := gets "/galera/*" }} server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 check port 8000 inter 12000 rise 3 fall 3
+{{ end }}
+
+listen stats 0.0.0.0:22002
+  balance
+  stats uri /haproxy_stats
+  stats realm HAProxy\ Statistics
+  stats auth admin:admin
+  stats admin if TRUE
+  stats refresh 5s
+  stats hide-version
