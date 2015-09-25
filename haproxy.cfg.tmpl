@@ -1,7 +1,10 @@
 global
-  log 127.0.0.1 local0 notice
+  log 127.0.0.1 local1 notice
+  maxconn 4096
   user haproxy
   group haproxy
+  daemon
+  pidfile /var/run/haproxy.pid
 
 defaults
   log global
@@ -14,13 +17,17 @@ defaults
 listen galera-cluster
   bind :33306
   mode tcp
-  option httpchk
+  #option httpchk
   balance roundrobin
 {{ range $node_name := gets "/galera/*" }} server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 #check port 8000 inter 12000 rise 3 fall 3
 {{ end }}
 
-listen 0.0.0.0:22002
-  mode http
+# For displaying HAProxy statistics.
+frontend stats
+  bind :22002
+  default_backend stats
+
+backend stats
   stats enable
   stats hide-version
   stats realm Haproxy Statistics
