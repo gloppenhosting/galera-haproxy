@@ -26,7 +26,7 @@ backend galera-cluster
   mode tcp
   option httpchk
   balance roundrobin
-{{ range $node_name := gets "/haproxy/galera/*" }} server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 check port 8000 inter 12000 rise 3 fall 3
+{{ range $node_name := gets "/haproxy/galera/*" }}  server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 check port 8000 inter 12000 rise 3 fall 3
 {{ end }}
 
 # For displaying HAProxy statistics.
