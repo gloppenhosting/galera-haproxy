@@ -25,7 +25,7 @@ frontend galera-cluster
 backend galera-cluster
   mode tcp
   option httpchk
-  balance roundrobin
+  balance leastconn
 {{ range $node_name := gets "/haproxy/galera/*" }}  server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 check port 8000 inter 12000 rise 3 fall 3
 {{ end }}
 
@@ -35,6 +35,7 @@ frontend stats
   default_backend stats
 
 backend stats
+  mode http
   stats enable
   stats hide-version
   stats realm Haproxy Statistics
