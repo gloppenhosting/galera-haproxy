@@ -5,6 +5,11 @@ global
   group haproxy
   daemon
   pidfile /var/run/haproxy.pid
+  ca-base /etc/ssl
+  crt-base /etc/ssl
+  ssl-default-bind-ciphers EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH
+  ssl-default-bind-options no-sslv3 no-tls-tickets
+  tune.ssl.default-dh-param 2048
 
 defaults
   log global
@@ -13,18 +18,20 @@ defaults
   timeout server 5000
   timeout client 5000
 
-
-listen galera-cluster
+frontend galera-cluster
   bind :33306
+  default_backend galera-cluster
+
+backend galera-cluster
   mode tcp
-  #option httpchk
+  option httpchk
   balance roundrobin
-{{ range $node_name := gets "/galera/*" }} server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 #check port 8000 inter 12000 rise 3 fall 3
+{{ range $node_name := gets "/haproxy/galera/*" }} server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 check port 8000 inter 12000 rise 3 fall 3
 {{ end }}
 
 # For displaying HAProxy statistics.
 frontend stats
-  bind :22002
+  bind :22002 ssl crt snakeoil.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3
   default_backend stats
 
 backend stats

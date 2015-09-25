@@ -2,8 +2,8 @@
 src = "haproxy.cfg.tmpl"
 dest = "/etc/haproxy/haproxy.cfg"
 keys = [
-  "/galera/",
+  "/haproxy/galera/",
 ]
 check_cmd = "haproxy -c -f {{ .src }}"
-reload_cmd = "haproxy -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid -d -D -sf $(cat /var/run/haproxy.pid)"
+reload_cmd = "haproxy -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid -d -D -st $(cat /var/run/haproxy.pid)"
 
